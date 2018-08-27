@@ -51,7 +51,7 @@ option(BUILD_PROG "Build utility programs" OFF)
 
 if(NOT EXISTS ${PROJECT_SOURCE_DIR}/.cppan)
     find_package(GIF)
-    hunter_add_package(Jpeg)
+    hunter_add_package(JPEG)
     find_package(JPEG CONFIG REQUIRED)
     hunter_add_package(PNG)
     find_package(PNG CONFIG REQUIRED)
