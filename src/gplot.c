@@ -386,6 +386,15 @@ l_int32  ignore;
     if (!gplot)
         return ERROR_INT("gplot not defined", procName, 1);
 
+#if defined (__APPLE__)
+    #include "TargetConditionals.h"
+#endif
+
+#if defined (__APPLE__) && (defined(TARGET_OS_IPHONE) || defined(OS_IOS))
+    L_ERROR("iOS does not support system()\n", procName);
+    return 1;
+#else
+
     gplotGenCommandFile(gplot);
     gplotGenDataFiles(gplot);
     cmdname = genPathname(gplot->cmdname, NULL);
@@ -399,6 +408,7 @@ l_int32  ignore;
     ignore = system(buf);  /* gnuplot || wgnuplot */
     LEPT_FREE(cmdname);
     return 0;
+#endif
 }
 
 

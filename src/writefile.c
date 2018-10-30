@@ -863,6 +863,15 @@ char            fullpath[_MAX_PATH];
         return ERROR_INT("no program chosen for display", procName, 1);
     }
 
+#if defined (__APPLE__)
+#include "TargetConditionals.h"
+#endif
+
+#if defined (__APPLE__) && (defined(TARGET_OS_IPHONE) || defined(OS_IOS))
+    L_ERROR("iOS does not support system()\n", procName);
+    return 1;
+#else
+
         /* Display with three views if either spp = 4 or if colormapped
          * and the alpha component is not fully opaque */
     opaque = TRUE;
@@ -980,6 +989,7 @@ char            fullpath[_MAX_PATH];
     pixDestroy(&pix1);
     pixDestroy(&pix2);
     LEPT_FREE(tempname);
+#endif
     return 0;
 }
 
