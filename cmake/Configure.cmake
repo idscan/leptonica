@@ -70,10 +70,16 @@ set(include_files_list
 )
 check_includes(include_files_list)
 
-set(functions_list
-    fmemopen
-)
-check_functions(functions_list)
+if(APPLE AND CMAKE_OSX_SYSROOT STREQUAL "iphoneos")
+    # on recent Mac OS version we finally have fmemopen function, bu on iOS still not. Looks like CMake
+    # is not able to validate it if we are crosscompiling and returns result for host platform.
+    set(HAVE_FMEMOPEN 0)
+else()
+    set(functions_list
+        fmemopen
+    )
+    check_functions(functions_list)
+endif()
 
 test_big_endian(BIG_ENDIAN)
 
