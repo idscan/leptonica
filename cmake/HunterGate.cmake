@@ -1,4 +1,4 @@
-# Copyright (c) 2013-2017, Ruslan Baratov
+# Copyright (c) 2013-2015, Ruslan Baratov
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,16 +42,10 @@
 #     * https://github.com/hunter-packages/gate/
 #     * https://github.com/ruslo/hunter
 
-option(HUNTER_ENABLED "Enable Hunter package manager support" ON)
-if(HUNTER_ENABLED)
-  if(CMAKE_VERSION VERSION_LESS "3.0")
-    message(FATAL_ERROR "At least CMake version 3.0 required for hunter dependency management."
-      " Update CMake or set HUNTER_ENABLED to OFF.")
-  endif()
-endif()
-
+cmake_minimum_required(VERSION 3.0) # Minimum for Hunter
 include(CMakeParseArguments) # cmake_parse_arguments
 
+option(HUNTER_ENABLED "Enable Hunter package manager support" ON)
 option(HUNTER_STATUS_PRINT "Print working status" ON)
 option(HUNTER_STATUS_DEBUG "Print a lot info" OFF)
 
@@ -293,33 +287,8 @@ function(hunter_gate_download dir)
   endif()
 
   hunter_gate_status_debug("Run generate")
-
-  # Need to add toolchain file too.
-  # Otherwise on Visual Studio + MDD this will fail with error:
-  # "Could not find an appropriate version of the Windows 10 SDK installed on this machine"
-  if(EXISTS "${CMAKE_TOOLCHAIN_FILE}")
-    set(toolchain_arg "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
-  else()
-    # 'toolchain_arg' can't be empty
-    set(toolchain_arg "-DCMAKE_TOOLCHAIN_FILE=")
-  endif()
-
-  string(COMPARE EQUAL "${CMAKE_MAKE_PROGRAM}" "" no_make)
-  if(no_make)
-    set(make_arg "")
-  else()
-    # Test case: remove Ninja from PATH but set it via CMAKE_MAKE_PROGRAM
-    set(make_arg "-DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}")
-  endif()
-
   execute_process(
-      COMMAND
-      "${CMAKE_COMMAND}"
-      "-H${dir}"
-      "-B${build_dir}"
-      "-G${CMAKE_GENERATOR}"
-      "${toolchain_arg}"
-      ${make_arg}
+      COMMAND "${CMAKE_COMMAND}" "-H${dir}" "-B${build_dir}"
       WORKING_DIRECTORY "${dir}"
       RESULT_VARIABLE download_result
       ${logging_params}
@@ -408,16 +377,16 @@ macro(HunterGate)
     string(COMPARE NOTEQUAL "${HUNTER_GATE_GLOBAL}" "" _have_global)
     string(COMPARE NOTEQUAL "${HUNTER_GATE_FILEPATH}" "" _have_filepath)
 
-    if(_have_unparsed)
-      hunter_gate_user_error(
-          "HunterGate unparsed arguments: ${HUNTER_GATE_UNPARSED_ARGUMENTS}"
-      )
-    endif()
     if(_empty_sha1)
       hunter_gate_user_error("SHA1 suboption of HunterGate is mandatory")
     endif()
     if(_empty_url)
       hunter_gate_user_error("URL suboption of HunterGate is mandatory")
+    endif()
+    if(_have_unparsed)
+      hunter_gate_user_error(
+          "HunterGate unparsed arguments: ${HUNTER_GATE_UNPARSED_ARGUMENTS}"
+      )
     endif()
     if(_have_global)
       if(HUNTER_GATE_LOCAL)
@@ -479,17 +448,17 @@ macro(HunterGate)
         "${HUNTER_GATE_ROOT}"
         "${HUNTER_GATE_VERSION}"
         "${HUNTER_GATE_SHA1}"
-        _hunter_self
+        hunter_self_
     )
 
-    set(_master_location "${_hunter_self}/cmake/Hunter")
+    set(_master_location "${hunter_self_}/cmake/Hunter")
     if(EXISTS "${HUNTER_GATE_ROOT}/cmake/Hunter")
       # Hunter downloaded manually (e.g. by 'git clone')
       set(_unused "xxxxxxxxxx")
       set(HUNTER_GATE_SHA1 "${_unused}")
       set(HUNTER_GATE_VERSION "${_unused}")
     else()
-      get_filename_component(_archive_id_location "${_hunter_self}/.." ABSOLUTE)
+      get_filename_component(_archive_id_location "${hunter_self_}/.." ABSOLUTE)
       set(_done_location "${_archive_id_location}/DONE")
       set(_sha1_location "${_archive_id_location}/SHA1")
 

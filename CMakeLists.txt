@@ -68,7 +68,7 @@ set(leptonica_INSTALL_CMAKE_DIR
 if(NOT SW_BUILD)
   hunter_add_package(giflib)
   find_package(giflib CONFIG)
-  hunter_add_package(Jpeg)
+  hunter_add_package(JPEG)
   find_package(JPEG CONFIG)
   hunter_add_package(PNG)
   find_package(PNG CONFIG)
